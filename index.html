@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF vers Word - Vertical ou Horizontal</title>
+
+  <style>
+    :root {
+      --bg: #eef3ff;
+      --bg-2: #f8faff;
+      --card: rgba(255, 255, 255, 0.9);
+      --card-strong: #ffffff;
+      --text: #172033;
+      --muted: #64708a;
+      --accent: #5b7cff;
+      --accent-2: #7a5cff;
+      --ok: #18864b;
+      --danger: #c93c3c;
+      --border: rgba(23, 32, 51, 0.1);
+      --border-strong: rgba(91, 124, 255, 0.18);
+      --shadow: 0 24px 70px rgba(39, 58, 110, 0.12);
+      --shadow-soft: 0 12px 30px rgba(39, 58, 110, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --gray-btn: #e8ecf5;
+      --gray-btn-text: #4b5568;
+      --gray-btn-border: rgba(23, 32, 51, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(91,124,255,0.18), transparent 24%),
+        radial-gradient(circle at 88% 16%, rgba(122,92,255,0.14), transparent 22%),
+        radial-gradient(circle at 50% 100%, rgba(91,124,255,0.08), transparent 30%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.38) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.38) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.4), transparent 85%);
+      opacity: 0.4;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 64px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 36px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.9));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      padding: clamp(24px, 4vw, 40px);
+    }
+
+    .shell::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(91,124,255,0.16), transparent 70%);
+      top: -140px;
+      right: -90px;
+      pointer-events: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+
+    .hero-copy {
+      padding: 6px 4px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: rgba(255,255,255,0.72);
+      color: #4560d6;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 5px rgba(91,124,255,0.12);
+    }
+
+    h1 {
+      margin: 0 0 25px;
+      font-size: clamp(34px, 5vw, 60px);
+      line-height: 1.2;
+      letter-spacing: -0.04em;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      max-width: 880px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      border-radius: var(--radius-xl);
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(10px);
+      padding: clamp(22px, 4vw, 0px);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .section-sub {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .badge {
+      white-space: nowrap;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(91,124,255,0.1);
+      border: 1px solid rgba(91,124,255,0.16);
+      font-size: 12px;
+      font-weight: 800;
+      color: #4a66dc;
+      letter-spacing: 0.03em;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    .field-group {
+      margin-bottom: 18px;
+    }
+
+    .format-shell {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(23,32,51,0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(244,247,255,0.96));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+      margin-bottom: 18px;
+    }
+
+    .upload-shell {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1.5px dashed rgba(91,124,255,0.24);
+      background: linear-gradient(180deg, rgba(91,124,255,0.04), rgba(255,255,255,0.84));
+      transition: border-color .2s ease, background .2s ease, transform .2s ease, box-shadow .2s ease;
+      cursor: pointer;
+    }
+
+    .upload-shell.dragover {
+      border-color: rgba(91,124,255,0.6);
+      background: linear-gradient(180deg, rgba(91,124,255,0.10), rgba(255,255,255,0.92));
+      box-shadow: 0 0 0 6px rgba(91,124,255,0.08);
+      transform: translateY(-1px);
+    }
+
+    .upload-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .upload-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(91,124,255,0.16), rgba(122,92,255,0.16));
+      color: #4d67dc;
+      font-size: 22px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+      flex-shrink: 0;
+    }
+
+    .upload-title {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .upload-sub {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    input[type="file"],
+    select {
+      width: 100%;
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      background: var(--card-strong);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input[type="file"]:hover,
+    input[type="file"]:focus,
+    select:hover,
+    select:focus {
+      border-color: rgba(91,124,255,0.3);
+      box-shadow: 0 0 0 5px rgba(91,124,255,0.08);
+    }
+
+    .file-gap {
+      margin-bottom: 28px;
+    }
+
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    button {
+      position: relative;
+      min-width: 260px;
+      max-width: 100%;
+      min-height: 64px;
+      border: 0;
+      border-radius: 18px;
+      padding: 16px 22px;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 18px 30px rgba(91,124,255,0.24);
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    button::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 45%);
+      pointer-events: none;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 34px rgba(91,124,255,0.28);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.72;
+      transform: none;
+      box-shadow: 0 10px 18px rgba(91,124,255,0.16);
+    }
+
+    #downloadBtn {
+      font-size: 16px;
+      min-height: 70px;
+      box-shadow: 0 22px 40px rgba(91,124,255,0.35);
+    }
+
+    .secondary-btn {
+      background: var(--gray-btn);
+      color: var(--gray-btn-text);
+      box-shadow: 0 10px 22px rgba(23,32,51,0.08);
+      border: 1px solid var(--gray-btn-border);
+    }
+
+    .secondary-btn::after {
+      background: linear-gradient(180deg, rgba(255,255,255,0.55), transparent 45%);
+    }
+
+    .secondary-btn:hover {
+      box-shadow: 0 14px 24px rgba(23,32,51,0.10);
+    }
+
+    .status-wrap {
+      border-radius: 18px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, rgba(244,247,255,0.88), rgba(255,255,255,0.92));
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .status-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #52617e;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 4px rgba(91,124,255,0.08);
+    }
+
+    .status {
+      min-height: 24px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--danger); }
+
+    .preview-section {
+      margin-top: 26px;
+    }
+
+    .preview-title {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .preview-sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .page-card {
+      background: rgba(255,255,255,0.88);
+      border-radius: 22px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(10px);
+    }
+
+    .page-card h3 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+
+    .half-block {
+      border: 1px solid rgba(23,32,51,0.08);
+      border-radius: 18px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(244,247,255,0.92));
+    }
+
+    .half-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .half-block p {
+      margin: 0 0 10px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    .half-block img {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      border: 1px solid rgba(23,32,51,0.08);
+      background: white;
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: min(100% - 20px, 1120px);
+        padding: 16px 0 34px;
+      }
+
+      .shell {
+        border-radius: 28px;
+        padding: 18px;
+      }
+
+      .card-head {
+        flex-direction: column;
+      }
+
+      .upload-head {
+        align-items: start;
+      }
+
+      .page-card,
+      .status-wrap,
+      .upload-shell,
+      .format-shell {
+        border-radius: 18px;
+      }
+
+      .action-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+        min-width: 100%;
+        min-height: 62px;
+      }
+
+      .preview {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Conversion rapide, simple et 100% locale</div>
+          <h1>Transforme ton PDF en document Word prêt pour annoter</h1>
+          <p class="sub">
+            Choisis le type de PDF en entrée, découpe automatiquement les pages si besoin, prévisualise les images, puis génère un document Word avec une image en haut de chaque page et un espace vide en dessous.
+          </p>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="section-title">Générer le document</h2>
+              <p class="section-sub">Tout se fait directement sur ton ordinateur : aucun fichier n’est envoyé ni stocké en ligne.</p>
+            </div>
+            <div class="badge">PDF → Word</div>
+          </div>
+
+          <div class="field-group">
+            <label class="label" for="pdfType">Type de PDF</label>
+            <div class="format-shell">
+              <div class="upload-head">
+                <div class="upload-icon">⇄</div>
+                <div>
+                  <p class="upload-title">Choix du format</p>
+                  <p class="upload-sub">Sélectionne le format du PDF source avant le traitement.</p>
+                </div>
+              </div>
+
+              <select id="pdfType">
+                <option value="vertical">PDF vertical (chaque page coupée en 2)</option>
+                <option value="horizontal">PDF horizontal (1 image par page, sans découpe)</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="label" for="pdfInput">PDF source</label>
+          <div class="upload-shell file-gap" id="dropZone">
+            <div class="upload-head">
+              <div class="upload-icon">↑</div>
+              <div>
+                <p class="upload-title">Sélection du fichier</p>
+                <p class="upload-sub">
+                  Dépose ton PDF ici, puis lance la génération du document Word ou la prévisualisation.
+                </p>
+              </div>
+            </div>
+            <input type="file" id="pdfInput" accept="application/pdf" style="display: none;" />
+          </div>
+
+          <div class="action-row">
+            <button id="previewBtn" type="button" class="secondary-btn">Prévisualiser</button>
+            <button id="downloadBtn" type="button">Télécharger le Word</button>
+          </div>
+
+          <div class="status-wrap" aria-live="polite">
+            <div class="status-label"><span class="status-dot"></span> Statut</div>
+            <div id="status" class="status">Aucun PDF chargé.</div>
+          </div>
+        </section>
+
+        <section class="preview-section">
+          <h2 class="preview-title">Aperçu</h2>
+          <p class="preview-sub">
+            Vérifie ici les images extraites avant de générer le document Word.
+          </p>
+          <div class="preview" id="preview"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <script>
+    const pdfInput = document.getElementById("pdfInput");
+    const pdfType = document.getElementById("pdfType");
+    const previewBtn = document.getElementById("previewBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const preview = document.getElementById("preview");
+    const statusEl = document.getElementById("status");
+    const dropZone = document.getElementById("dropZone");
+    const previewSection = document.querySelector(".preview-section");
+
+    let extractedImages = [];
+    let processedFileSignature = "";
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    function setStatus(message, type = "") {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`.trim();
+    }
+
+    function setBusy(isBusy) {
+      previewBtn.disabled = isBusy;
+      downloadBtn.disabled = isBusy;
+      pdfInput.disabled = isBusy;
+      pdfType.disabled = isBusy;
+    }
+
+    function setInputFiles(file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      pdfInput.files = dt.files;
+    }
+
+    function getCurrentFileSignature(file, type) {
+      if (!file) return "";
+      return [file.name, file.size, file.lastModified, type].join("__");
+    }
+
+    function clearPreparedData() {
+      extractedImages = [];
+      processedFileSignature = "";
+      preview.innerHTML = "";
+    }
+
+    function loadImageDimensions(dataUrl) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.width, height: img.height });
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
+
+    async function renderPageToDataUrl(page, scale = 2) {
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({
+        canvasContext: ctx,
+        viewport
+      }).promise;
+
+      return canvas.toDataURL("image/png");
+    }
+
+    async function splitPageIntoTopBottom(page, scale = 2) {
+      const viewport = page.getViewport({ scale });
+
+      const fullCanvas = document.createElement("canvas");
+      const fullCtx = fullCanvas.getContext("2d");
+
+      fullCanvas.width = viewport.width;
+      fullCanvas.height = viewport.height;
+
+      await page.render({
+        canvasContext: fullCtx,
+        viewport
+      }).promise;
+
+      const halfHeight = Math.floor(fullCanvas.height / 2);
+
+      const topCanvas = document.createElement("canvas");
+      const topCtx = topCanvas.getContext("2d");
+      topCanvas.width = fullCanvas.width;
+      topCanvas.height = halfHeight;
+
+      topCtx.drawImage(
+        fullCanvas,
+        0, 0, fullCanvas.width, halfHeight,
+        0, 0, topCanvas.width, topCanvas.height
+      );
+
+      const bottomCanvas = document.createElement("canvas");
+      const bottomCtx = bottomCanvas.getContext("2d");
+      bottomCanvas.width = fullCanvas.width;
+      bottomCanvas.height = fullCanvas.height - halfHeight;
+
+      bottomCtx.drawImage(
+        fullCanvas,
+        0, halfHeight, fullCanvas.width, fullCanvas.height - halfHeight,
+        0, 0, bottomCanvas.width, bottomCanvas.height
+      );
+
+      return {
+        topDataUrl: topCanvas.toDataURL("image/png"),
+        bottomDataUrl: bottomCanvas.toDataURL("image/png")
+      };
+    }
+
+    function createVerticalPreviewCard(pageNumber, topDataUrl, bottomDataUrl) {
+      const card = document.createElement("div");
+      card.className = "page-card";
+
+      card.innerHTML = `
+        <h3>Page ${pageNumber} — format vertical</h3>
+        <div class="half-block">
+          <p>Moitié haute</p>
+          <img src="${topDataUrl}" alt="Page ${pageNumber} moitié haute" />
+        </div>
+        <div class="half-block">
+          <p>Moitié basse</p>
+          <img src="${bottomDataUrl}" alt="Page ${pageNumber} moitié basse" />
+        </div>
+      `;
+
+      preview.appendChild(card);
+    }
+
+    function createHorizontalPreviewCard(pageNumber, dataUrl) {
+      const card = document.createElement("div");
+      card.className = "page-card";
+
+      card.innerHTML = `
+        <h3>Page ${pageNumber} — format horizontal</h3>
+        <div class="half-block">
+          <p>Image complète</p>
+          <img src="${dataUrl}" alt="Page ${pageNumber} complète" />
+        </div>
+      `;
+
+      preview.appendChild(card);
+    }
+
+    async function prepareImages({ showPreview = true } = {}) {
+      const file = pdfInput.files[0];
+      const selectedType = pdfType.value;
+
+      if (!file) {
+        setStatus("Choisis un fichier PDF.", "err");
+        return false;
+      }
+
+      const currentSignature = getCurrentFileSignature(file, selectedType);
+
+      if (extractedImages.length > 0 && processedFileSignature === currentSignature) {
+        if (showPreview) {
+          previewSection.scrollIntoView({ behavior: "smooth" });
+          setStatus("Aperçu déjà prêt.", "ok");
+        }
+        return true;
+      }
+
+      if (showPreview) {
+        preview.innerHTML = "";
+      }
+
+      extractedImages = [];
+      processedFileSignature = "";
+
+      setStatus("Lecture du PDF en cours...");
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+        setStatus(`PDF chargé : ${pdf.numPages} page(s). Traitement en cours...`);
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+
+          if (selectedType === "vertical") {
+            const { topDataUrl, bottomDataUrl } = await splitPageIntoTopBottom(page, 2);
+
+            extractedImages.push({
+              name: `page_${i}_haut`,
+              dataUrl: topDataUrl,
+              sourcePage: i
+            });
+
+            extractedImages.push({
+              name: `page_${i}_bas`,
+              dataUrl: bottomDataUrl,
+              sourcePage: i
+            });
+
+            if (showPreview) {
+              createVerticalPreviewCard(i, topDataUrl, bottomDataUrl);
+            }
+          } else {
+            const fullDataUrl = await renderPageToDataUrl(page, 2);
+
+            extractedImages.push({
+              name: `page_${i}_complete`,
+              dataUrl: fullDataUrl,
+              sourcePage: i
+            });
+
+            if (showPreview) {
+              createHorizontalPreviewCard(i, fullDataUrl);
+            }
+          }
+
+          setStatus(`Page ${i}/${pdf.numPages} traitée...`);
+        }
+
+        processedFileSignature = currentSignature;
+
+        if (showPreview) {
+          previewSection.scrollIntoView({ behavior: "smooth" });
+          setStatus(`Terminé : ${extractedImages.length} image(s) prête(s) pour l’aperçu et le Word.`, "ok");
+        } else {
+          setStatus(`Terminé : ${extractedImages.length} image(s) prête(s) pour le Word.`, "ok");
+        }
+
+        return true;
+      } catch (error) {
+        console.error(error);
+        setStatus("Erreur pendant le traitement du PDF.", "err");
+        alert("Une erreur est survenue pendant le traitement du PDF.");
+        return false;
+      }
+    }
+
+    async function generateWord() {
+      const file = pdfInput.files[0];
+      if (!file) {
+        setStatus("Choisis un fichier PDF.", "err");
+        return;
+      }
+
+      const prepared = await prepareImages({ showPreview: false });
+      if (!prepared || !extractedImages.length) {
+        setStatus("Impossible de générer le Word car aucune image n’a été préparée.", "err");
+        return;
+      }
+
+      setStatus("Création du document Word...");
+
+      try {
+        const {
+          Document,
+          Packer,
+          Paragraph,
+          ImageRun,
+          PageBreak,
+          AlignmentType,
+          LevelFormat
+        } = window.docx;
+
+        const selectedType = pdfType.value;
+        const children = [];
+
+        const maxImageWidth = selectedType === "vertical" ? 600 : 700;
+        const maxImageHeight = selectedType === "vertical" ? 450 : 400;
+
+        for (let i = 0; i < extractedImages.length; i++) {
+          const item = extractedImages[i];
+          const dims = await loadImageDimensions(item.dataUrl);
+
+          let finalWidth = dims.width;
+          let finalHeight = dims.height;
+
+          const ratio = Math.min(
+            maxImageWidth / finalWidth,
+            maxImageHeight / finalHeight,
+            1
+          );
+
+          finalWidth = Math.round(finalWidth * ratio);
+          finalHeight = Math.round(finalHeight * ratio);
+
+          const imageBlob = await fetch(item.dataUrl).then(r => r.blob());
+          const imageBuffer = await imageBlob.arrayBuffer();
+
+          children.push(
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 200 },
+              style: "Normal",
+              children: [
+                new ImageRun({
+                  data: imageBuffer,
+                  transformation: {
+                    width: finalWidth,
+                    height: finalHeight
+                  }
+                })
+              ]
+            })
+          );
+
+          children.push(
+            new Paragraph({
+              text: "",
+              style: "Normal",
+              numbering: { reference: "tirets", level: 0 }
+            })
+          );
+
+          if (i < extractedImages.length - 1) {
+            children.push(
+              new Paragraph({
+                style: "Normal",
+                children: [new PageBreak()]
+              })
+            );
+          }
+        }
+
+        const doc = new Document({
+          styles: {
+            default: {
+              document: {
+                run: {
+                  font: "Calibri",
+                  size: 24,
+                  language: "fr-FR"
+                },
+                paragraph: {
+                  spacing: {
+                    after: 0,
+                    line: 240
+                  }
+                }
+              }
+            },
+            paragraphStyles: [
+              {
+                id: "Normal",
+                name: "Normal",
+                basedOn: "Normal",
+                next: "Normal",
+                quickFormat: true,
+                run: {
+                  font: "Calibri",
+                  size: 24,
+                  language: "fr-FR"
+                },
+                paragraph: {
+                  spacing: {
+                    after: 0,
+                    line: 240
+                  }
+                }
+              }
+            ]
+          },
+          numbering: {
+            config: [
+              {
+                reference: "tirets",
+                levels: [
+                  {
+                    level: 0,
+                    format: LevelFormat.BULLET,
+                    text: "-",
+                    alignment: AlignmentType.LEFT,
+                    style: {
+                      paragraph: {
+                        indent: { left: 360, hanging: 360 }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          sections: [
+            {
+              properties: {},
+              children
+            }
+          ]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, "document_images_depuis_pdf.docx");
+
+        setStatus("Document Word généré avec succès.", "ok");
+      } catch (error) {
+        console.error(error);
+        setStatus("Erreur pendant la création du document Word.", "err");
+        alert("Une erreur est survenue pendant la création du document Word.");
+      }
+    }
+
+    previewBtn.addEventListener("click", async () => {
+      setBusy(true);
+      try {
+        await prepareImages({ showPreview: true });
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    downloadBtn.addEventListener("click", async () => {
+      setBusy(true);
+      try {
+        await generateWord();
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    dropZone.addEventListener("click", () => {
+      if (!pdfInput.disabled) {
+        pdfInput.click();
+      }
+    });
+
+    ["dragenter", "dragover"].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "dragend"].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove("dragover");
+      });
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove("dragover");
+
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+
+      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+        setStatus("Le fichier déposé doit être un PDF.", "err");
+        return;
+      }
+
+      setInputFiles(file);
+      clearPreparedData();
+      setStatus(`Fichier sélectionné : ${file.name}`);
+    });
+
+    pdfInput.addEventListener("change", () => {
+      const file = pdfInput.files[0];
+      clearPreparedData();
+      if (file) {
+        setStatus(`Fichier sélectionné : ${file.name}`);
+      } else {
+        setStatus("Aucun PDF chargé.");
+      }
+    });
+
+    pdfType.addEventListener("change", () => {
+      clearPreparedData();
+      setStatus("Format modifié. Le PDF sera retraité avec ce nouveau format.");
+    });
+  </script>
+</body>
+</html>
